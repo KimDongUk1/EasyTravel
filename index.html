@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 여행 추천</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1500&q=80');
+      background-size: cover;
+      background-position: center;
+      color: #fff;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+    }
+    .container {
+      background-color: rgba(0, 0, 0, 0.4);
+      max-width: 600px;
+      margin: auto;
+      padding: 2rem;
+      border-radius: 15px;
+      margin-top: 5vh;
+    }
+    input, button, textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    input, textarea {
+      background: #f0f8ff;
+      color: #000;
+    }
+    button {
+      background-color: #00bcd4;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0097a7;
+    }
+    #response {
+      background-color: #ffffffcc;
+      color: #000;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    .section {
+      margin-bottom: 1.5rem;
+    }
+    .section h3 {
+      margin-top: 0;
+      color: #00796b;
+    }
+    .section ul {
+      padding-left: 20px;
+    }
+    .map {
+      margin-top: 1rem;
+    }
+    .place-image {
+      margin-top: 10px;
+      width: 100%;
+      border-radius: 8px;
+    }
+    #chat-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #007bff;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+    #chat-popup {
+      display: none;
+      flex-direction: column;
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 300px;
+      height: 400px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 1000;
+      padding: 10px;
+    }
+    #chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .user {
+      align-self: flex-end;
+      background: #d2f1ff;
+      padding: 8px 12px;
+      border-radius: 10px;
+    }
+    .bot {
+      align-self: flex-start;
+      background: #eee;
+      padding: 8px 12px;
+      border-radius: 10px;
+    }
+    #chat-form {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+      gap: 5px;
+    }
+    #message-input {
+      flex: 5;
+      height: 40px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      color: #000;
+      background: #fff;
+    }
+    #chat-form button {
+      flex: 1;
+      height: 40px;
+      padding: 8px 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .user, .bot {
+      max-width: 80%;
+      word-break: break-word;
+      direction: ltr;
+      text-align: left;
+      unicode-bidi: plaintext;
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>🏝 AI 맞춤형 여행 추천</h1>
+  <label>🌍 여행지 (예: 제주도, 몰디브 등):</label>
+  <input id="destination" type="text" placeholder="여행지를 입력하세요" />
+
+  <label>🗓 여행 기간 (예: 3박 4일):</label>
+  <input id="duration" type="text" placeholder="예: 3박 4일" />
+
+  <label>💰 예산 (예: 100만원):</label>
+  <input id="budget" type="text" placeholder="예: 100만원 이하" />
+
+  <button onclick="getRecommendation()">AI 추천 받기</button>
+
+  <div id="response"></div>
+</div>
+
+<!-- GPT 채팅 버튼과 팝업 -->
+<div id="chat-toggle" onclick="toggleChat()">💬 GPT 채팅</div>
+<div id="chat-popup">
+  <div id="chat-box"></div>
+  <form id="chat-form">
+    <input type="text" id="message-input" placeholder="메시지를 입력하세요" required />
+    <button type="submit">전송</button>
+  </form>
+</div>
+
+<script>
+  async function getRecommendation() {
+    const dest = document.getElementById("destination").value;
+    const dur = document.getElementById("duration").value;
+    const bud = document.getElementById("budget").value;
+
+    const requestData = {
+      destination: dest,
+      duration: dur,
+      budget: bud
+    };
+
+    const response = await fetch("/api/recommend", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(requestData)
+    });
+
+    const data = await response.json();
+    renderStructuredResult(data.result, dest);
+  }
+
+  function renderStructuredResult(resultText, destName) {
+    const responseDiv = document.getElementById("response");
+    responseDiv.innerHTML = "";
+
+    const sections = resultText.split(/\n(?=📍|🧭|Day|\d+일차|\-|\* )/g);
+
+    sections.forEach(section => {
+      const div = document.createElement("div");
+      div.classList.add("section");
+
+      if (section.includes("항공권")) {
+        div.innerHTML = `<h3>✈️ 항공권</h3><p>${section.replace(/\n/g, "<br>")}</p>`;
+      } else if (section.includes("호텔")) {
+        div.innerHTML = `<h3>🏨 호텔</h3><p>${section.replace(/\n/g, "<br>")}</p>`;
+      } else if (section.startsWith("📍")) {
+        div.innerHTML = `<h3>📍 Kakao 장소 추천</h3><p>${section.replace("📍 Kakao 검색 결과 Top 3:", "").replace(/\n/g, "<br>")}</p>`;
+      } else if (section.startsWith("🧭")) {
+        div.innerHTML = `<h3>🧭 여행 요약 정보</h3><p>${section.replace("🧭 Trawel.io 여행 요약:", "").replace(/\n/g, "<br>")}</p>`;
+      } else {
+        div.innerHTML = `<h3>🗓 추천 일정</h3><p>${section.replace(/\n/g, "<br>")}</p>`;
+      }
+      responseDiv.appendChild(div);
+    });
+
+    const mapIframe = document.createElement("iframe");
+    mapIframe.className = "map";
+    mapIframe.width = "100%";
+    mapIframe.height = "300";
+    mapIframe.style.border = "0";
+    mapIframe.loading = "lazy";
+    mapIframe.allowFullscreen = true;
+    mapIframe.referrerPolicy = "no-referrer-when-downgrade";
+    mapIframe.src = `https://www.google.com/maps?q=${encodeURIComponent(destName)}&output=embed`;
+    responseDiv.appendChild(mapIframe);
+
+    const image = document.createElement("img");
+    image.className = "place-image";
+    image.src = `https://source.unsplash.com/featured/?${encodeURIComponent(destName + ' travel')}`;
+    image.alt = `${destName} 이미지`;
+    responseDiv.appendChild(image);
+  }
+
+  function toggleChat() {
+    const chat = document.getElementById("chat-popup");
+    chat.style.display = (chat.style.display === "flex") ? "none" : "flex";
+  }
+
+  const chatForm = document.getElementById("chat-form");
+  const messageInput = document.getElementById("message-input");
+  const chatBox = document.getElementById("chat-box");
+
+  chatForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const userMessage = messageInput.value.trim();
+    if (!userMessage) return;
+
+    appendMessage("user", userMessage);
+    messageInput.value = "";
+
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: userMessage })
+    });
+
+    const data = await response.json();
+    appendMessage("bot", data.reply);
+  });
+
+  function appendMessage(sender, text) {
+    const messageDiv = document.createElement("div");
+    messageDiv.className = sender;
+    messageDiv.textContent = text;
+    chatBox.appendChild(messageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+</script>
+</body>
+</html>

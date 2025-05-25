@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 여행 추천</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1500&q=80');
+      background-size: cover;
+      background-position: center;
+      color: #fff;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+    }
+    .container {
+      background-color: rgba(0, 0, 0, 0.4);
+      max-width: 600px;
+      margin: auto;
+      padding: 2rem;
+      border-radius: 15px;
+      margin-top: 5vh;
+    }
+    input, button, textarea {
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    input, textarea {
+      background: #f0f8ff;
+      color: #000;
+    }
+    button {
+      background-color: #00bcd4;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0097a7;
+    }
+    #response {
+      background-color: #ffffffcc;
+      color: #000;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    .section {
+      margin-bottom: 1.5rem;
+    }
+    .section h3 {
+      margin-top: 0;
+      color: #00796b;
+    }
+    .section ul {
+      padding-left: 20px;
+    }
+    .map {
+      margin-top: 1rem;
+    }
+    .place-image {
+      margin-top: 10px;
+      width: 100%;
+      border-radius: 8px;
+    }
+    #chat-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #007bff;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+    #chat-popup {
+      display: none;
+      flex-direction: column;
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 300px;
+      height: 400px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 1000;
+      padding: 10px;
+    }
+    #chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background-color: #fff;
+    }
+    .user {
+      align-self: flex-end;
+      background: #d2f1ff;
+      padding: 8px 12px;
+      border-radius: 10px;
+      max-width: 80%;
+      word-break: break-word;
+      color: #000;
+      direction: ltr;
+      text-align: left;
+      unicode-bidi: plaintext;
+    }
+    .bot {
+      align-self: flex-start;
+      background: #eee;
+      padding: 8px 12px;
+      border-radius: 10px;
+      max-width: 80%;
+      word-break: break-word;
+      color: #000;
+      direction: ltr;
+      text-align: left;
+      unicode-bidi: plaintext;
+    }
+    #chat-form {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    #message-input {
+      flex-grow: 5;
+      height: 40px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      color: #000;
+      background: #fff;
+    }
+    #chat-form button {
+      flex-grow: 1;
+      height: 40px;
+      padding: 8px 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+<!-- 이하 생략 (기존 내용 그대로 유지) -->

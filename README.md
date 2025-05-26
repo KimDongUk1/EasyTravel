@@ -1,1 +1,1 @@
-# EasyTravel
+AI를 활용한 여행 사이트 제작
